@@ -2,7 +2,7 @@ services:
   backend:
     image: backend
     build:
-      context: ./backend
+      context: .
     ports:
       - "8000:8000"
     depends_on:
