@@ -17,17 +17,6 @@ services:
     networks:
       - app_network
 
-  frontend:
-    image: frontend
-    build:
-      context: ./frontend
-    ports:
-      - "3000:3000"
-    depends_on:
-      - backend
-    networks:
-      - app_network
-
   database:
     image: postgres:16.8
     ports:
