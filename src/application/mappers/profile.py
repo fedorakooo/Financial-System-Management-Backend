@@ -10,6 +10,7 @@ class ProfileMapper:
     @staticmethod
     def map_profile_update_dto_to_user(dto: ProfileUpdateDTO, current_user: User) -> User:
         return User(
+            id=current_user.id,
             name=dto.name if dto.name else current_user.name,
             passport_number=dto.passport_number if dto.passport_number else current_user.passport_number,
             email=dto.email if dto.email else current_user.email,

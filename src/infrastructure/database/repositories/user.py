@@ -13,7 +13,7 @@ class UserRepository(AbstractUserRepository):
         self.connection = connection
 
     async def get_user_by_id(self, user_id: int) -> User:
-        stmt = "SELECT * FROM users WHERE id = $1"
+        stmt = "SELECT * FROM users WHERE id = $1 FOR UPDATE"
 
         row = await self.connection.fetchrow(stmt, user_id)
 
@@ -89,3 +89,11 @@ class UserRepository(AbstractUserRepository):
 
         if result == "DELETE 0":
             raise NotFoundError(f"User with id = {user_id} not found")
+
+    async def get_user_by_passport_number(self, passport_number: str) -> User:
+        stmt = "SELECT * FROM users WHERE passport_number = $1"
+
+        row = await self.connection.fetchrow(stmt, passport_number)
+        if row is None:
+            raise NotFoundError("User with the specified passport number not found")
+        return UserDatabaseMapper.from_db_row(row)

@@ -50,7 +50,7 @@ async def get_user_by_id(
     return UserSchemaMapper.to_response(fetched_user_dto)
 
 
-@router.get("/", response_model=list[UserReadDTO], responses={
+@router.get("/", response_model=list[UserResponse], responses={
     401: {"description": "Invalid or expired token"},
     403: {"description": "User is inactive or lacks required role to access this resource"},
     500: {"description": "Unexpected server error"}
@@ -77,7 +77,7 @@ async def get_users(
     return [UserSchemaMapper.to_response(fetched_user_dto) for fetched_user_dto in fetched_users_dto]
 
 
-@router.patch("/{user_id}", response_model=UserReadDTO, responses={
+@router.patch("/{user_id}", response_model=UserResponse, responses={
     400: {"description": "No fields to update"},
     401: {"description": "Invalid or expired token"},
     403: {"description": "User is inactive or lacks required role to access this resource"},
@@ -97,7 +97,7 @@ async def update_user_by_id(
 ) -> UserResponse:
     log_service.info(f"User with ID {requesting_user.id} is updating user with ID {user_id}")
     try:
-        updated_user = await user_management_service.update_user_by_id(user_id, user_update)
+        updated_user = await user_management_service.update_user_by_id(user_id, UserSchemaMapper.from_update_request(user_update), requesting_user)
         log_service.info(f"User with ID {requesting_user.id} successfully updated user with ID {user_id}")
     except NotFoundError as exc:
         log_service.error(
@@ -142,18 +142,18 @@ async def delete_user_by_id(
 ) -> dict:
     log_service.info(f"User with ID {requesting_user.id} is attempting to delete user with ID {user_id}")
     try:
-        await user_management_service.delete_user_by_id(user_id)
+        await user_management_service.delete_user_by_id(user_id, requesting_user)
         log_service.info(f"User with ID {requesting_user.id} successfully deleted user with ID {user_id}")
     except NotFoundError as exc:
         log_service.warning(
             f"User with ID {requesting_user.id} attempted to delete user with ID {user_id}, but user not found: {str(exc)}"
         )
-        HttpExceptionFactory.create_http_exception(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+        raise HttpExceptionFactory.create_http_exception(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
     except Exception as exc:
         log_service.error(
             f"User with ID {requesting_user.id} encountered an unexpected error while deleting user with ID {user_id}: {str(exc)}"
         )
-        HttpExceptionFactory.create_http_exception(
+        raise HttpExceptionFactory.create_http_exception(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An unexpected error occurred while deleting the user."
         )

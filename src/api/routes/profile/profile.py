@@ -63,7 +63,7 @@ async def update_profile(
     try:
         updated_user_dto = await profile_service.update_profile_by_user_id(
             requesting_user,
-            profile_update
+            ProfileSchemaMapper.from_update_request(profile_update)
         )
         log_service.info(f"Profile updated successfully for user_id = {updated_user_dto.id}")
     except NotFoundError as exc:

@@ -4,6 +4,7 @@ from src.application.abstractions.auth.login import AbstractLoginService
 from src.application.abstractions.auth.password import AbstractPasswordService
 from src.application.abstractions.auth.token import AbstractTokenService
 from src.application.abstractions.auth.users import AbstractAuthUserService
+from src.infrastructure.exceptions.repository_exceptions import NotFoundError
 from src.infrastructure.exceptions.jwt_exceptions import InvalidLoginError
 
 
@@ -25,8 +26,11 @@ class LoginService(AbstractLoginService):
         return True
 
     async def authenticate_user(self, phone_number: str, password: str) -> Optional[str]:
-        user = await self.auth_user_service.get_user_by_phone_number(phone_number)
-        is_valid = await self.validate_auth_user(phone_number, password)
+        try:
+            user = await self.auth_user_service.get_user_by_phone_number(phone_number)
+            is_valid = await self.validate_auth_user(phone_number, password)
+        except NotFoundError:
+            raise InvalidLoginError()
         if not is_valid:
             raise InvalidLoginError()
 

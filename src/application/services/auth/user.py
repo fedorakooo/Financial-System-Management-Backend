@@ -1,10 +1,11 @@
+from src.application.abstractions.auth.users import AbstractAuthUserService
 from src.application.mappers.user import UserMapper
 from src.domain.abstractions.database.repositories.users import AbstractUserRepository
 from src.application.dtos.user import UserReadDTO
 from src.domain.abstractions.database.uows.user import AbstractUserUnitOfWork
 
 
-class AuthUserService:
+class AuthUserService(AbstractAuthUserService):
     def __init__(self, uow: AbstractUserUnitOfWork):
         self.uow = uow
 

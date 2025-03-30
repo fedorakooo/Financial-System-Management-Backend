@@ -30,13 +30,14 @@ class UserMapper:
     @staticmethod
     def map_user_update_dto_to_user(dto: UserUpdateDTO, current_user: User) -> User:
         return User(
+            id=current_user.id,
             name=current_user.name,
             passport_number=current_user.passport_number,
             email=current_user.email,
             phone_number=current_user.phone_number,
             hashed_password=current_user.hashed_password,
             role=current_user.role,
-            is_active=dto.is_active if dto.is_active else current_user.is_active,
+            is_active=dto.is_active if dto.is_active is not None else current_user.is_active,
             is_foreign=current_user.is_foreign,
             created_at=current_user.created_at,
             updated_at=datetime.now()

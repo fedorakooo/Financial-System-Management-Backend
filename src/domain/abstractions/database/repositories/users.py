@@ -15,7 +15,13 @@ class AbstractUserRepository(ABC):
         """
         pass
 
+    @abstractmethod
     async def get_user_by_passport_number(self, passport_number: str) -> User:
+        """Fetches a user by their passport number.
+
+        Raises:
+            NotFoundError: If the user does not exist.
+        """
         pass
 
     @abstractmethod

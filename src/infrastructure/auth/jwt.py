@@ -60,7 +60,8 @@ class JWTHandler(AbstractJWTHandler):
             decoded = jwt.decode(
                 token,
                 self.public_key,
-                algorithms=[self.algorithm]
+                algorithms=[self.algorithm],
+                options={"require": ["exp", "iat", "id", "role"]},
             )
         except jwt.ExpiredSignatureError:
             raise ExpiredTokenError("Token has expired")

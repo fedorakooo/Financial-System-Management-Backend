@@ -6,16 +6,19 @@ from src.api.exceptions.exception_factory import HttpExceptionFactory
 from src.application.abstractions.auth.auth import AbstractAuthService
 from src.application.abstractions.logs.log import AbstractLogService
 from src.application.dtos.user import UserAccessDTO
+from src.domain.abstractions.database.uows.user import AbstractUserUnitOfWork
 from src.domain.exceptions.forbidden import UserInactiveError
 from src.infrastructure.dependencies.app import Application
 from src.infrastructure.exceptions.jwt_exceptions import ExpiredTokenError, InvalidTokenError, TokenDecodeError
+from src.infrastructure.exceptions.repository_exceptions import NotFoundError
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 
 @inject
-def get_current_active_auth_user(
+async def get_current_active_auth_user(
         token: str = Depends(oauth2_scheme),
+        user_uow: AbstractUserUnitOfWork = Depends(Provide[Application.uow.user_unit_of_work]),
         auth_service: AbstractAuthService = Depends(
             Provide[Application.services.auth_service]
         ),
@@ -24,7 +27,15 @@ def get_current_active_auth_user(
         )
 ) -> UserAccessDTO:
     try:
-        return auth_service.get_current_active_auth_user(token)
+        identity = auth_service.get_current_active_auth_user(token)
+        async with user_uow as uow:
+            try:
+                user = await uow.user_repository.get_user_by_id(identity.id)
+            except NotFoundError:
+                raise InvalidTokenError("Token user no longer exists")
+        if not user.is_active:
+            raise UserInactiveError()
+        return UserAccessDTO(id=user.id, role=user.role)
     except ExpiredTokenError as exc:
         raise HttpExceptionFactory.create_http_exception(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc))
     except InvalidTokenError as exc:
