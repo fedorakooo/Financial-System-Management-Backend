@@ -14,13 +14,15 @@ services:
       DB_USER: ${DB_USER}
       DB_PASS: ${DB_PASS}
       DB_NAME: ${DB_NAME}
+    volumes:
+      - ./certs:/app/certs:ro
     networks:
       - app_network
 
   database:
     image: postgres:16.8
     ports:
-      - "5433:5433"
+      - "5432:5432"
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASS}
