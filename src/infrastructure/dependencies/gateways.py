@@ -10,7 +10,7 @@ class Gateways(containers.DeclarativeContainer):
 
     core = providers.DependenciesContainer()
 
-    database_connection = providers.Singleton(
+    database_connection = providers.Factory(
         DatabaseConnection,
         logger=core.logger,
         dsn=config.url

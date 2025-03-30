@@ -14,36 +14,45 @@ from src.domain.abstractions.database.repositories.withdrawals import AbstractWi
 class AbstractRepositoryFactory(ABC):
     @abstractmethod
     def create_account_repository(self, connection) -> AbstractAccountRepository:
+        """Creates a account repository bound to the supplied transaction connection."""
         pass
 
     @abstractmethod
     def create_addition_repository(self, connection) -> AbstractAdditionRepository:
+        """Creates a addition repository bound to the supplied transaction connection."""
         pass
 
     @abstractmethod
     def create_bank_repository(self, connection) -> AbstractBankRepository:
+        """Creates a bank repository bound to the supplied transaction connection."""
         pass
 
     @abstractmethod
     def create_transfer_repository(self, connection) -> AbstractTransferRepository:
+        """Creates a transfer repository bound to the supplied transaction connection."""
         pass
 
     @abstractmethod
     def create_user_repository(self, connection) -> AbstractUserRepository:
+        """Creates a user repository bound to the supplied transaction connection."""
         pass
 
     @abstractmethod
     def create_withdrawal_repository(self, connection) -> AbstractWithdrawalRepository:
+        """Creates a withdrawal repository bound to the supplied transaction connection."""
         pass
 
     @abstractmethod
     def create_loan_repository(self, connection) -> AbstractLoanRepository:
+        """Creates a loan repository bound to the supplied transaction connection."""
         pass
 
     @abstractmethod
     def create_deposit_repository(self, connection) -> AbstractDepositRepository:
+        """Creates a deposit repository bound to the supplied transaction connection."""
         pass
 
     @abstractmethod
     def create_enterprise_repository(self, connection) -> AbstractEnterpriseRepository:
+        """Creates a enterprise repository bound to the supplied transaction connection."""
         pass

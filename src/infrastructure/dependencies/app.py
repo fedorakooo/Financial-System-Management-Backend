@@ -1,5 +1,6 @@
 from dependency_injector import containers, providers
 
+from src.config import CONFIG_PATH
 from src.infrastructure.dependencies.core import Core
 from src.infrastructure.dependencies.gateways import Gateways
 from src.infrastructure.dependencies.services import Services
@@ -7,7 +8,7 @@ from src.infrastructure.dependencies.uow import UnitOfWork
 
 
 class Application(containers.DeclarativeContainer):
-    config = providers.Configuration(yaml_files=["config.yml"])
+    config = providers.Configuration(yaml_files=[str(CONFIG_PATH)])
 
     wiring_config = containers.WiringConfiguration(
         packages=["src.api"]

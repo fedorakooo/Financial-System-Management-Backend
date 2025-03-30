@@ -15,23 +15,29 @@ class BankUnitOfWork(AbstractBankUnitOfWork):
 
     async def __aenter__(self):
         """Set up the context manager by establishing a connection and starting a transaction."""
-        await self.db_connection.connect()
-        self._transaction = self.db_connection.connection.transaction()
-        await self._transaction.start()
+        try:
+            await self.db_connection.connect()
+            self._transaction = self.db_connection.connection.transaction()
+            await self._transaction.start()
 
-        self._bank_repository = self.repository_factory.create_bank_repository(self.db_connection.connection)
+            self._bank_repository = self.repository_factory.create_bank_repository(self.db_connection.connection)
 
-        return self
+            return self
+        except BaseException:
+            await self.db_connection.close()
+            raise
 
     async def __aexit__(self, exc_type, exc, tb):
         """Clean up by committing or rolling back the transaction and closing the connection."""
-        if self._transaction:
-            if exc_type is None:
-                await self._transaction.commit()
-            else:
-                await self._transaction.rollback()
+        try:
+            if self._transaction:
+                if exc_type is None:
+                    await self._transaction.commit()
+                else:
+                    await self._transaction.rollback()
+        finally:
             self._transaction = None
-        await self.db_connection.close()
+            await self.db_connection.close()
 
     @property
     def bank_repository(self) -> AbstractBankRepository:

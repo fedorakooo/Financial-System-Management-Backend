@@ -9,15 +9,19 @@ class DatabaseInitializer:
 
     async def create_all_tables(self) -> None:
         """Method to call the creation of all tables"""
-        await self.create_banks_table()
-        await self.create_users_table()
-        await self.create_accounts_table()
-        await self.create_additions_table()
-        await self.create_withdrawals_table()
-        await self.create_transfers_table()
-        await self.create_loans_table()
-        await self.create_deposits_table()
-        await self.create_enterprise_tables()
+        async with self.db_connection as conn:
+            async with conn.connection.transaction():
+                stmt = "SELECT pg_advisory_xact_lock(74193021)"
+                await conn.execute(stmt)
+                await self.create_banks_table()
+                await self.create_users_table()
+                await self.create_accounts_table()
+                await self.create_additions_table()
+                await self.create_withdrawals_table()
+                await self.create_transfers_table()
+                await self.create_loans_table()
+                await self.create_deposits_table()
+                await self.create_enterprise_tables()
 
     async def create_banks_table(self) -> None:
         create_table = """
@@ -55,11 +59,11 @@ class DatabaseInitializer:
             END $$;
         """
 
-        async with self.db_connection as conn:
-            await conn.execute(create_table)
-            await conn.execute(create_index)
-            await conn.execute(create_function)
-            await conn.execute(create_trigger)
+        conn = self.db_connection
+        await conn.execute(create_table)
+        await conn.execute(create_index)
+        await conn.execute(create_function)
+        await conn.execute(create_trigger)
 
     async def create_users_table(self) -> None:
         create_enum_role = """
@@ -109,18 +113,18 @@ class DatabaseInitializer:
             END $$;
         """
 
-        async with self.db_connection as conn:
-            await conn.execute(create_enum_role)
-            await conn.execute(create_table)
-            await conn.execute(create_function)
-            await conn.execute(create_trigger)
+        conn = self.db_connection
+        await conn.execute(create_enum_role)
+        await conn.execute(create_table)
+        await conn.execute(create_function)
+        await conn.execute(create_trigger)
 
     async def create_accounts_table(self) -> None:
         create_enum_status = """
             DO $$ 
             BEGIN
                 IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'account_status') THEN
-                    CREATE TYPE account_status AS ENUM ('ACTIVE', 'BLOCKED', 'FROZEN', 'ON_CONSIDERATION');
+                    CREATE TYPE account_status AS ENUM ('ACTIVE', 'BLOCKED', 'FROZEN', 'ON_CONSIDERATION', 'CANCELLED');
                 END IF;
             END $$;
         """
@@ -169,12 +173,12 @@ class DatabaseInitializer:
             END $$;
         """
 
-        async with self.db_connection as conn:
-            await conn.execute(create_enum_status)
-            await conn.execute(create_enum_type)
-            await conn.execute(create_table)
-            await conn.execute(create_function)
-            await conn.execute(create_trigger)
+        conn = self.db_connection
+        await conn.execute(create_enum_status)
+        await conn.execute(create_enum_type)
+        await conn.execute(create_table)
+        await conn.execute(create_function)
+        await conn.execute(create_trigger)
 
     async def create_additions_table(self) -> None:
         create_enum_source = """
@@ -196,9 +200,9 @@ class DatabaseInitializer:
             );
         """
 
-        async with self.db_connection as conn:
-            await conn.execute(create_enum_source)
-            await conn.execute(create_table)
+        conn = self.db_connection
+        await conn.execute(create_enum_source)
+        await conn.execute(create_table)
 
     async def create_withdrawals_table(self) -> None:
         create_enum_source = """
@@ -220,9 +224,9 @@ class DatabaseInitializer:
             );
         """
 
-        async with self.db_connection as conn:
-            await conn.execute(create_enum_source)
-            await conn.execute(create_table)
+        conn = self.db_connection
+        await conn.execute(create_enum_source)
+        await conn.execute(create_table)
 
     async def create_transfers_table(self) -> None:
         create_enum_status = """
@@ -268,11 +272,11 @@ class DatabaseInitializer:
             END $$;
         """
 
-        async with self.db_connection as conn:
-            await conn.execute(create_enum_status)
-            await conn.execute(create_table)
-            await conn.execute(create_function)
-            await conn.execute(create_trigger)
+        conn = self.db_connection
+        await conn.execute(create_enum_status)
+        await conn.execute(create_table)
+        await conn.execute(create_function)
+        await conn.execute(create_trigger)
 
     async def create_loans_table(self) -> None:
         create_enum_loan_transaction_type = """
@@ -336,13 +340,13 @@ class DatabaseInitializer:
             $$ LANGUAGE plpgsql;
         """
 
-        async with self.db_connection as conn:
-            await conn.execute(create_enum_loan_transaction_type)
-            await conn.execute(create_loans_table)
-            await conn.execute(create_loan_accounts_table)
-            await conn.execute(create_loan_transactions_table)
-            await conn.execute(create_function)
-            await conn.execute(create_trigger)
+        conn = self.db_connection
+        await conn.execute(create_enum_loan_transaction_type)
+        await conn.execute(create_loans_table)
+        await conn.execute(create_loan_accounts_table)
+        await conn.execute(create_loan_transactions_table)
+        await conn.execute(create_function)
+        await conn.execute(create_trigger)
 
     async def create_deposits_table(self) -> None:
         create_enum_deposit_transaction_type = """
@@ -370,15 +374,15 @@ class DatabaseInitializer:
                 deposit_account_id BIGINT NOT NULL REFERENCES deposit_accounts(id) ON DELETE CASCADE,
                 account_id BIGINT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
                 type deposit_transaction_type NOT NULL,
-                amount DECIMAL(18 ,2) NOT NULL,
+                amount DECIMAL(30,2) NOT NULL,
                 created_at TIMESTAMP NOT NULL DEFAULT NOW()
             );
         """
 
-        async with self.db_connection as conn:
-            await conn.execute(create_enum_deposit_transaction_type)
-            await conn.execute(create_deposit_accounts_table)
-            await conn.execute(create_deposit_transactions_table)
+        conn = self.db_connection
+        await conn.execute(create_enum_deposit_transaction_type)
+        await conn.execute(create_deposit_accounts_table)
+        await conn.execute(create_deposit_transactions_table)
 
     async def create_enterprise_tables(self) -> None:
         create_enum_enterprise_type = """
@@ -426,7 +430,8 @@ class DatabaseInitializer:
                 id BIGSERIAL PRIMARY KEY,
                 status enterprise_payroll_request_status NOT NULL,
                 passport_numbers TEXT[] NOT NULL,
-                accounts_id BIGINT[] NOT NULL,
+                accounts_id BIGINT[] NOT NULL DEFAULT '{}',
+                amount DECIMAL(18,2) NOT NULL CHECK (amount > 0),
                 enterprise_id BIGINT NOT NULL REFERENCES enterprises(id) ON DELETE CASCADE,
                 specialist_id BIGINT NOT NULL REFERENCES enterprise_specialists(id) ON DELETE CASCADE,
                 created_at TIMESTAMP DEFAULT NOW(),
@@ -437,15 +442,15 @@ class DatabaseInitializer:
         create_enterprise_payroll_transactions_table = """
             CREATE TABLE IF NOT EXISTS enterprise_payroll_transactions (
                 id BIGSERIAL PRIMARY KEY,
-                enterprise_payroll_request_id BIGINT NOT NULL REFERENCES enterprise_payroll_requests(id) ON DELETE CASCADE,
+                payroll_request_id BIGINT NOT NULL REFERENCES enterprise_payroll_requests(id) ON DELETE CASCADE,
                 created_at TIMESTAMP DEFAULT NOW()
             );
         """
 
-        async with self.db_connection as conn:
-            await conn.execute(create_enum_enterprise_type)
-            await conn.execute(create_enum_payroll_request_status)
-            await conn.execute(create_enterprise_table)
-            await conn.execute(create_enterprise_specialists_table)
-            await conn.execute(create_enterprise_payroll_requests_table)
-            await conn.execute(create_enterprise_payroll_transactions_table)
+        conn = self.db_connection
+        await conn.execute(create_enum_enterprise_type)
+        await conn.execute(create_enum_payroll_request_status)
+        await conn.execute(create_enterprise_table)
+        await conn.execute(create_enterprise_specialists_table)
+        await conn.execute(create_enterprise_payroll_requests_table)
+        await conn.execute(create_enterprise_payroll_transactions_table)

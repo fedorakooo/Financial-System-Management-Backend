@@ -20,8 +20,9 @@ class DatabaseConnection(AbstractDatabaseConnection):
         self._connection = await asyncpg.connect(self.dsn)
 
     async def close(self):
-        if self.connection:
-            await self.connection.close()
+        if self._connection is not None:
+            await self._connection.close()
+            self._connection = None
 
     @property
     def connection(self):
@@ -47,4 +48,4 @@ class DatabaseConnection(AbstractDatabaseConnection):
         return self
 
     async def __aexit__(self, exc_type, exc, tb):
-        await self.connection.close()
+        await self.close()

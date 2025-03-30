@@ -1,5 +1,8 @@
-from asyncpg.exceptions import UniqueViolationError, ForeignKeyViolationError
+import re
 from dataclasses import asdict, is_dataclass
+
+from asyncpg.exceptions import UniqueViolationError, ForeignKeyViolationError
+
 from src.infrastructure.exceptions.repository_exceptions import UniqueConstraintError, ForeignKeyError
 
 
@@ -33,7 +36,6 @@ class ErrorHandler:
     ) -> ForeignKeyError:
         """Handles foreign key constraint violation handlers."""
 
-        import re
         match = re.search(r"Key \((.*?)\)=\((.*?)\) is not present", error.detail)
         if match:
             field, value = match.group(1), match.group(2)
