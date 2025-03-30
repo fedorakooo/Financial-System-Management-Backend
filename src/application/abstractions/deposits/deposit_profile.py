@@ -15,6 +15,12 @@ class AbstractDepositProfileService(ABC):
             deposit_account_id: int,
             requesting_user: UserAccessDTO
     ) -> DepositAccountReadDTO:
+        """Fetches a deposit and its underlying account for the owning client.
+
+        Raises:
+            ForbiddenError: If the requesting user cannot access this resource.
+            NotFoundError: If the requested resource does not exist.
+        """
         pass
 
     @abstractmethod
@@ -33,4 +39,15 @@ class AbstractDepositProfileService(ABC):
             deposit_transaction_create_client_dto: DepositTransactionCreateClientDTO,
             requesting_user: UserAccessDTO
     ) -> DepositTransactionReadDTO:
+        """Transfers the entire active deposit balance to the client's active settlement account.
+
+        Records the withdrawal and blocks the emptied deposit in one transaction.
+
+        Raises:
+            ForbiddenError: If the client does not own both accounts.
+            NotFoundError: If either account does not exist.
+            InactiveAccountError: If either account is not active.
+            InvalidAccountTypeError: If the recipient is not a settlement account.
+            InvalidOperationError: If the accounts are identical or the deposit is empty.
+        """
         pass

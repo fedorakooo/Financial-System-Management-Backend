@@ -12,14 +12,14 @@ class TransferRepository(AbstractTransferRepository):
         self.connection = connection
 
     async def get_transfer_by_id(self, transfer_id: int) -> Transfer:
-        stmt = "SELECT * FROM transfers WHERE id = $1"
+        stmt = "SELECT * FROM transfers WHERE id = $1 FOR UPDATE"
 
         row = await self.connection.fetchrow(stmt, transfer_id)
 
         if row:
             return TransferDatabaseMapper.from_db_row(row)
 
-        raise NotFoundError("Transfer with id = {transfer_id} not found")
+        raise NotFoundError(f"Transfer with id = {transfer_id} not found")
 
     async def get_transfers_by_account_id(self, account_id: int) -> list[Transfer]:
         stmt = "SELECT * FROM transfers WHERE from_account_id = $1 OR to_account_id = $1"
@@ -38,7 +38,6 @@ class TransferRepository(AbstractTransferRepository):
         stmt = f"INSERT INTO transfers ({columns}) VALUES ({placeholders}) RETURNING *"
 
         row = await self.connection.fetchrow(stmt, *values)
-        print(row["status"])
         return TransferDatabaseMapper.from_db_row(row)
 
     async def update_transfer_status_by_id(

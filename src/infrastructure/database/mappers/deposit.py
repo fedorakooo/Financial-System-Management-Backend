@@ -1,3 +1,4 @@
+from src.domain.enums.deposit import DepositTransactionType
 from src.domain.entities.deposit import DepositAccount, DepositTransaction
 
 
@@ -18,7 +19,7 @@ class DepositDatabaseMapper:
     def from_db_row_to_deposit_transaction(row: dict) -> DepositTransaction:
         return DepositTransaction(
             deposit_account_id=row["deposit_account_id"],
-            type=row["type"],
+            type=DepositTransactionType(row["type"]),
             amount=row["amount"],
             id=row["id"],
             created_at=row["created_at"],
@@ -30,7 +31,7 @@ class DepositDatabaseMapper:
         return {
             "deposit_account_id": deposit_transaction.deposit_account_id,
             "account_id": deposit_transaction.account_id,
-            "type": deposit_transaction.type,
+            "type": deposit_transaction.type.value,
             "amount": deposit_transaction.amount
         }
 

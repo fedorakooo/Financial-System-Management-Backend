@@ -1,5 +1,4 @@
 from src.infrastructure.mappers.account import AccountSchemaMapper
-from src.infrastructure.schemas.loan import LoanTransactionResponse
 from src.application.dtos.deposit import (
     DepositAccountReadDTO,
     DepositAccountCreateDTO,
@@ -45,7 +44,6 @@ class DepositSchemaMapper:
         return DepositAccountCreateDTO(
             amount=request.amount,
             interest_rate=request.interest_rate,
-            bank_id=request.interest_rate,
             user_id=user_id,
             from_account_id=request.from_account_id
         )

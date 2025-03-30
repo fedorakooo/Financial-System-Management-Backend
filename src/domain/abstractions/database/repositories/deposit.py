@@ -15,8 +15,10 @@ class AbstractDepositRepository(ABC):
         """
 
     async def create_deposit_transaction(self, deposit_transaction: DepositTransaction) -> DepositTransaction:
+        """Records a deposit funding or withdrawal operation within the current transaction."""
         pass
 
     @abstractmethod
     async def create_deposit_account(self, deposit_account_create: DepositAccount):
+        """Creates the deposit details linked to the account, owner, and funding account."""
         pass

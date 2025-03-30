@@ -27,6 +27,8 @@ class TransferManagementService(AbstractTransferManagementService):
             transfer = await self.uow.transfer_repository.get_transfer_by_id(transfer_id)
             if transfer.status is TransferStatus.CANCELED:
                 raise TransferAlreadyCanceledError(transfer.id, transfer.status)
+            account_ids = [transfer.from_account_id, transfer.to_account_id]
+            await uow.account_repository.lock_accounts(account_ids)
             sender_account = await self.uow.account_repository.get_account_by_id(transfer.from_account_id)
             if sender_account.status is not AccountStatus.ACTIVE:
                 raise SuspendedAccountOperationError(sender_account.id, sender_account.status)
@@ -51,4 +53,3 @@ class TransferManagementService(AbstractTransferManagementService):
             )
         updated_transfer_dto = TransferMapper.map_transfer_to_transfer_read_dto(updated_transfer)
         return updated_transfer_dto
-

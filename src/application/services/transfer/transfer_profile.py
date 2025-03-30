@@ -5,7 +5,8 @@ from src.application.mappers.transfer import TransferMapper
 from src.application.services.transfer.access_control import TransferProfileAccessControlService as AccessControl
 from src.domain.abstractions.database.uows.transfer import AbstractTransferUnitOfWork
 from src.domain.enums.account import AccountStatus
-from src.domain.exceptions.account import InactiveAccountError
+from src.domain.exceptions.account import InactiveAccountError, InsufficientFundsError
+from src.domain.exceptions.payment import InvalidOperationError
 from src.infrastructure.exceptions.repository_exceptions import NotFoundError
 
 
@@ -30,15 +31,21 @@ class TransferProfileService(AbstractTransferProfileService):
             transfer_create_dto: TransferCreateDTO,
             requesting_user: UserAccessDTO
     ) -> TransferReadDTO:
+        if transfer_create_dto.from_account_id == transfer_create_dto.to_account_id:
+            raise InvalidOperationError("Source and destination accounts must differ")
         async with self.uow as uow:
+            account_ids = [transfer_create_dto.from_account_id, transfer_create_dto.to_account_id]
+            await uow.account_repository.lock_accounts(account_ids)
             sender_account = await uow.account_repository.get_account_by_id(transfer_create_dto.from_account_id)
             AccessControl.can_create_transfer(sender_account.user_id, requesting_user)
             if sender_account.status is not AccountStatus.ACTIVE:
                 raise InactiveAccountError(sender_account.status)
             receive_account = await uow.account_repository.get_account_by_id(transfer_create_dto.to_account_id)
             if receive_account.status is not AccountStatus.ACTIVE:
-                raise NotFoundError(f"Account with id {receive_account.status} not found")
+                raise InactiveAccountError(receive_account.status)
 
+            if sender_account.balance < transfer_create_dto.amount:
+                raise InsufficientFundsError(sender_account.balance)
             new_sender_account_balance = sender_account.balance - transfer_create_dto.amount
             new_receiver_account_balance = receive_account.balance + transfer_create_dto.amount
             transfer_create = TransferMapper.map_transfer_create_dto_to_transfer(transfer_create_dto)

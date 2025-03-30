@@ -45,10 +45,9 @@ async def get_deposit_account_by_id(
         log_service.error(
             f"User ID {requesting_user.id} ({requesting_user.role}) encountered an error while fetching deposit account with ID {deposit_account_id}: {str(exc)}"
         )
-        raise exc
         raise HttpExceptionFactory.create_http_exception(
             status.HTTP_500_INTERNAL_SERVER_ERROR,
-            f"An unexpected error occurred while fetching loan account with ID {loan_account_id}."
+            f"An unexpected error occurred while fetching loan account with ID {deposit_account_id}."
         )
     fetched_deposit_account = DepositSchemaMapper.map_deposit_account_to_response(fetched_deposit_account_dto)
     return fetched_deposit_account
@@ -91,7 +90,6 @@ async def create_deposit_account(
         log_service.error(
             f"User ID {requesting_user.id} ({requesting_user.role}) encountered an unexpected error while creating deposit account: {str(exc)}"
         )
-        raise exc
         raise HttpExceptionFactory.create_http_exception(
             status.HTTP_500_INTERNAL_SERVER_ERROR,
             "An unexpected error occurred while creating deposit account."
@@ -100,7 +98,7 @@ async def create_deposit_account(
     return created_deposit_account
 
 
-@router.post("/{deposit_account_id}", response_model=list[DepositTransactionResponse])
+@router.post("/{deposit_account_id}", response_model=DepositTransactionResponse)
 @inject
 async def transfer_from_deposit_to_account(
         deposit_account_id: int,
@@ -110,7 +108,7 @@ async def transfer_from_deposit_to_account(
             Provide[Application.services.deposit_profile_service]
         ),
         log_service: AbstractLogService = Depends(Provide[Application.services.log_service])
-) -> list[DepositTransactionResponse]:
+) -> DepositTransactionResponse:
     deposit_transaction_create_dto = DepositSchemaMapper.map_deposit_transaction_client_from_create_request(
         deposit_transaction_create_request,
         deposit_account_id
@@ -125,7 +123,6 @@ async def transfer_from_deposit_to_account(
     except ForbiddenError as exc:
         raise HttpExceptionFactory.create_http_exception(status.HTTP_403_FORBIDDEN, str(exc))
     except Exception as exc:
-        raise exc
         raise HttpExceptionFactory.create_http_exception(
             status.HTTP_500_INTERNAL_SERVER_ERROR,
             "An unexpected error occurred while creating loan transaction."

@@ -38,7 +38,9 @@ class DepositMapper:
             deposit_transaction: DepositTransaction
     ) -> DepositTransactionReadDTO:
         return DepositTransactionReadDTO(
-            deposit_account_id=deposit_transaction,
+            deposit_account_id=deposit_transaction.deposit_account_id,
+            id=deposit_transaction.id,
+            account_id=deposit_transaction.account_id,
             type=deposit_transaction.type,
             amount=deposit_transaction.amount,
             created_at=deposit_transaction.created_at
