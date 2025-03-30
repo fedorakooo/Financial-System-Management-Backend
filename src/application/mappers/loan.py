@@ -17,7 +17,7 @@ class LoanMapper:
     def map_loan_create_dto_to_loan(dto: LoanCreateDTO) -> Loan:
         return Loan(
             amount=dto.amount,
-            term_months=dto.term_months.value,
+            term_months=dto.term_months,
             interest_rate=dto.interest_rate
         )
 

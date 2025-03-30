@@ -20,11 +20,6 @@ class LoanAccountNonZeroBalanceError(LoanError):
         )
 
 
-class LoanError(Exception):
-    """Base exception for loan-related errors."""
-    pass
-
-
 class InsufficientFundsError(LoanError):
     def __init__(
             self,

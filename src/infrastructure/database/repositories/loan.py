@@ -22,7 +22,7 @@ class LoanRepository(AbstractLoanRepository):
         row = await self.connection.fetchrow(stmt, account_id)
         if row is None:
             raise NotFoundError(f"Loan account with account id = {account_id} not found")
-        return LoanDatabaseMapper.from_db_row_to_loan(row)
+        return LoanDatabaseMapper.from_db_row_to_loan_account(row)
 
 
     async def get_loan_transactions_by_loan_account_id(self, loan_account_id: int) -> list[LoanTransaction]:
@@ -31,7 +31,7 @@ class LoanRepository(AbstractLoanRepository):
         return [LoanDatabaseMapper.from_db_row_to_loan_transaction(row) for row in rows]
 
     async def get_loan_account_by_id(self, loan_account_id: int) -> LoanAccount:
-        stmt = "SELECT * FROM loan_accounts WHERE id = $1"
+        stmt = "SELECT * FROM loan_accounts WHERE id = $1 FOR UPDATE"
         row = await self.connection.fetchrow(stmt, loan_account_id)
         if row is None:
             raise NotFoundError(f"Loan account with id = {loan_account_id} not found")
@@ -39,8 +39,8 @@ class LoanRepository(AbstractLoanRepository):
 
     async def get_loan_accounts_by_user_id(self, user_id: int) -> list[LoanAccount]:
         stmt = "SELECT * FROM loan_accounts WHERE user_id = $1"
-        row = await self.connection.fetchrow(stmt, user_id)
-        return LoanDatabaseMapper.from_db_row_to_loan_account(row)
+        rows = await self.connection.fetch(stmt, user_id)
+        return [LoanDatabaseMapper.from_db_row_to_loan_account(row) for row in rows]
 
     async def create_loan(self, loan: Loan) -> Loan:
         loan_create_row = LoanDatabaseMapper.from_loan_to_db_row(loan)

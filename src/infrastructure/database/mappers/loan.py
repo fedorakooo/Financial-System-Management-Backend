@@ -21,7 +21,7 @@ class LoanDatabaseMapper:
         return {
             "interest_rate": loan.interest_rate,
             "amount": loan.amount,
-            "term_months": loan.term_months,
+            "term_months": loan.term_months.value,
         }
 
     @staticmethod

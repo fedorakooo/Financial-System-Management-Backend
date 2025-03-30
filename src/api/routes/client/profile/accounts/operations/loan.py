@@ -44,17 +44,16 @@ async def get_loan_account_by_account_id(
         raise HttpExceptionFactory.create_http_exception(status.HTTP_403_FORBIDDEN, str(exc))
     except NotFoundError as exc:
         log_service.warning(
-            f"User ID {requesting_user.id} ({requesting_user.role}) tried to access non-existent loan account with ID {loan_account_id}: {str(exc)}"
+            f"User ID {requesting_user.id} ({requesting_user.role}) tried to access non-existent loan account with ID {account_id}: {str(exc)}"
         )
         raise HttpExceptionFactory.create_http_exception(status.HTTP_404_NOT_FOUND, str(exc))
     except Exception as exc:
         log_service.error(
             f"User ID {requesting_user.id} ({requesting_user.role}) encountered an error while fetching loan account: {str(exc)}"
         )
-        raise exc
         raise HttpExceptionFactory.create_http_exception(
             status.HTTP_500_INTERNAL_SERVER_ERROR,
-            f"An unexpected error occurred while fetching loan account with ID {loan_account_id}."
+            f"An unexpected error occurred while fetching loan account with ID {account_id}."
         )
     fetched_loan_account = LoanSchemaMapper.map_loan_account_to_response(fetched_loan_account_dto)
     return fetched_loan_account
@@ -130,7 +129,6 @@ async def create_loan_transaction(
         )
         raise HttpExceptionFactory.create_http_exception(status.HTTP_404_NOT_FOUND, str(exc))
     except ForbiddenError as exc:
-        raise exc
         log_service.error(
             f"User ID {requesting_user.id} ({requesting_user.role}) encountered a ForbiddenError while creating loan transaction request: {str(exc)}"
         )
@@ -139,7 +137,6 @@ async def create_loan_transaction(
         log_service.error(
             f"User ID {requesting_user.id} ({requesting_user.role}) encountered an unexpected error while creating loan transaction: {str(exc)}"
         )
-        raise exc
         raise HttpExceptionFactory.create_http_exception(
             status.HTTP_500_INTERNAL_SERVER_ERROR,
             "An unexpected error occurred while creating loan transaction."
@@ -164,7 +161,7 @@ async def get_loan_transactions_by_loan_account_id(
             requesting_user
         )
     except Exception as exc:
-        raise exc
+        raise
     loan_transactions = [
         LoanSchemaMapper.map_loan_transaction_to_response(loan_transaction_dto) for loan_transaction_dto in loan_transactions_dto
     ]

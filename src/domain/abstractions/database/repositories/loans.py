@@ -23,7 +23,13 @@ class AbstractLoanRepository(ABC):
         """
         pass
 
+    @abstractmethod
     async def get_loan_account_by_account_id(self, account_id: int) -> LoanAccount:
+        """Fetches a loan account by the identifier of its underlying bank account.
+
+        Raises:
+            NotFoundError: If the linked loan account does not exist.
+        """
         pass
 
     @abstractmethod
@@ -31,15 +37,22 @@ class AbstractLoanRepository(ABC):
         """Fetches loan accounts associated with a specific user."""
         pass
 
+    @abstractmethod
     async def get_loan_transactions_by_loan_account_id(self, loan_account_id: int) -> list[LoanTransaction]:
         """Fetches loan transactions associated with a specific loan account."""
         pass
 
+    @abstractmethod
     async def create_loan(self, loan: Loan) -> Loan:
+        """Creates loan terms and returns the persisted loan with its generated identifier."""
         pass
 
+    @abstractmethod
     async def create_loan_transaction(self, loan_transaction: LoanTransaction) -> LoanTransaction:
+        """Records a loan credit or payment within the current transaction."""
         pass
 
+    @abstractmethod
     async def create_loan_account(self, loan_account_create: LoanAccount):
+        """Links a bank account, loan, and borrower and returns the persisted loan account."""
         pass
