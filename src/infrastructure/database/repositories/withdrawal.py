@@ -21,7 +21,7 @@ class WithdrawalRepository(AbstractWithdrawalRepository):
         if row:
             return WithdrawalDatabaseMapper.from_db_row(row)
 
-        raise NotFoundError("withdrawal with id = {withdrawal_id} not found")
+        raise NotFoundError(f"withdrawal with id = {withdrawal_id} not found")
 
     async def get_withdrawals(self) -> list[Withdrawal]:
         stmt = "SELECT * FROM withdrawals"
@@ -50,6 +50,6 @@ class WithdrawalRepository(AbstractWithdrawalRepository):
         except UniqueViolationError as exc:
             raise ErrorHandler.handle_unique_violation("Withdrawal", exc, withdrawal_create)
         except ForeignKeyViolationError as exc:
-            raise ErrorHandler.handle_unique_violation("Withdrawal", exc, withdrawal_create)
+            raise ErrorHandler.handle_foreign_key_violation("Withdrawal", exc)
 
         return WithdrawalDatabaseMapper.from_db_row(row)

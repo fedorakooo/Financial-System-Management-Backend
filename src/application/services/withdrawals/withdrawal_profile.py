@@ -42,7 +42,8 @@ class WithdrawalProfileService(AbstractWithdrawalProfileService):
             new_account_balance = account.balance - withdrawal_create_dto.amount
             if new_account_balance < 0:
                 raise InsufficientFundsError(account.balance)
-            created_withdrawal = await uow.withdrawal_repository.create_withdrawal(withdrawal_create_dto)
+            withdrawal = WithdrawalMapper.map_withdrawal_create_dto_to_withdrawal(withdrawal_create_dto, withdrawal_create_dto.account_id)
+            created_withdrawal = await uow.withdrawal_repository.create_withdrawal(withdrawal)
             await uow.account_repository.update_account_balance(withdrawal_create_dto.account_id, new_account_balance)
 
         created_withdrawal_dto = WithdrawalMapper.map_withdrawal_to_withdrawal_read_dto(created_withdrawal)

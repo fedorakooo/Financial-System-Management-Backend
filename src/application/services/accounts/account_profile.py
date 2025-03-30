@@ -4,6 +4,7 @@ from src.application.dtos.user import UserAccessDTO
 from src.application.mappers.account import AccountMapper
 from src.application.services.accounts.access_control import AccountProfileAccessControlService as AccessControl
 from src.domain.abstractions.database.uows.account import AbstractAccountUnitOfWork
+from src.domain.exceptions.account import StatusChangeNotAllowedError, AccountAlreadyInRequestedStatusError
 from src.domain.enums.account import AccountType, AccountStatus
 
 
@@ -51,6 +52,11 @@ class AccountProfileService(AbstractAccountProfileService):
         async with self.uow as uow:
             current_account = await self.uow.account_repository.get_account_by_id(account_id)
             AccessControl.can_update_account(current_account.user_id, requesting_user)
+            requested = account_update_dto.status
+            if requested == current_account.status:
+                raise AccountAlreadyInRequestedStatusError(requested)
+            if current_account.status is not AccountStatus.ACTIVE or requested not in (AccountStatus.BLOCKED, AccountStatus.FROZEN):
+                raise StatusChangeNotAllowedError(current_account.status, requested)
             account_update = AccountMapper.map_account_update_client_dto_to_account(account_update_dto, current_account)
             updated_account = await self.uow.account_repository.update_account(account_id, account_update)
         updated_account_dto = AccountMapper.map_account_to_account_read_dto(updated_account)

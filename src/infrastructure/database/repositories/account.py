@@ -5,6 +5,7 @@ from asyncpg.exceptions import UniqueViolationError, ForeignKeyViolationError
 from src.domain.abstractions.database.repositories.accounts import AbstractAccountRepository
 from src.domain.entities.account import Account
 from src.domain.enums.account import AccountStatus
+from src.domain.exceptions.payment import InvalidOperationError
 from src.infrastructure.database.handlers.error_handler import ErrorHandler
 from src.infrastructure.database.mappers.account import AccountDatabaseMapper
 from src.infrastructure.exceptions.repository_exceptions import NotFoundError
@@ -14,8 +15,13 @@ class AccountRepository(AbstractAccountRepository):
     def __init__(self, db_connection: Any):
         self.connection = db_connection
 
+    async def lock_accounts(self, account_ids: list[int]) -> None:
+        stmt = "SELECT id FROM accounts WHERE id = ANY($1::int[]) ORDER BY id FOR UPDATE"
+
+        await self.connection.fetch(stmt, sorted(set(account_ids)))
+
     async def get_account_by_id(self, account_id) -> Account:
-        stmt = "SELECT * FROM accounts WHERE id = $1"
+        stmt = "SELECT * FROM accounts WHERE id = $1 FOR UPDATE"
 
         row = await self.connection.fetchrow(stmt, account_id)
 
@@ -45,7 +51,7 @@ class AccountRepository(AbstractAccountRepository):
         except UniqueViolationError as exc:
             raise ErrorHandler.handle_unique_violation("Account", exc, account_create)
         except ForeignKeyViolationError as exc:
-            raise ErrorHandler.handle_unique_violation("Account", exc, account_create)
+            raise ErrorHandler.handle_foreign_key_violation("Account", exc)
 
         return AccountDatabaseMapper.from_db_row(row)
 
@@ -77,6 +83,9 @@ class AccountRepository(AbstractAccountRepository):
         await self.connection.execute(stmt, account_id, new_status.value)
 
     async def delete_account_by_id(self, account_id: int) -> None:
+        account = await self.get_account_by_id(account_id)
+        if account.balance != 0:
+            raise InvalidOperationError("Cannot delete an account with a nonzero balance")
         stmt = "DELETE FROM accounts WHERE id = $1"
 
         result = await self.connection.execute(stmt, account_id)

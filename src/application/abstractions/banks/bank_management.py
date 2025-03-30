@@ -8,12 +8,12 @@ class AbstractBankManagementService(ABC):
     """Abstract service for staff-level users to manage banks."""
 
     @abstractmethod
-    async def get_bank_by_id(self, bank_id: int) -> BankReadDTO:
+    async def get_bank_by_id(self, bank_id: int, requesting_user: UserAccessDTO) -> BankReadDTO:
         """Retrieve bank information by its ID."""
         pass
 
     @abstractmethod
-    async def get_banks(self) -> list[BankReadDTO]:
+    async def get_banks(self, requesting_user: UserAccessDTO) -> list[BankReadDTO]:
         """Retrieve a list of banks."""
         pass
 

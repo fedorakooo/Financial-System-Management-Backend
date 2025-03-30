@@ -103,7 +103,6 @@ async def create_withdrawal(
         log_service.error(
             f"User ID {requesting_user.id} ({requesting_user.role}) encountered an unexpected error while creating withdrawal: {str(exc)}"
         )
-        raise exc
         raise HttpExceptionFactory.create_http_exception(
             status.HTTP_500_INTERNAL_SERVER_ERROR,
             "An unexpected error occurred while creating the withdrawal."

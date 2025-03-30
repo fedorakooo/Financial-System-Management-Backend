@@ -18,7 +18,7 @@ class AdditionRepository(AbstractAdditionRepository):
         if row:
             return AdditionDatabaseMapper.from_db_row(row)
 
-        raise NotFoundError("Addition with id = {addition_id} not found")
+        raise NotFoundError(f"Addition with id = {addition_id} not found")
 
     async def get_additions(self) -> list[Addition]:
         stmt = "SELECT * FROM additions"

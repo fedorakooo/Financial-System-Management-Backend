@@ -14,5 +14,5 @@ class WithdrawalResponse(BaseModel):
 
 
 class WithdrawalCreateRequest(BaseModel):
-    amount: Decimal = Decimal("0.00")
+    amount: Decimal
     source: WithdrawalSource

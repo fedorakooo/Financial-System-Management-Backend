@@ -24,13 +24,14 @@ router = APIRouter(prefix="/banks", tags=["Banks Management"])
 @inject
 async def get_bank_by_id(
         bank_id: int,
+        requesting_user: UserAccessDTO = Depends(get_current_active_auth_user),
         bank_management_service: AbstractBankManagementService = Depends(
             Provide[Application.services.bank_management_service]
         ),
         log_service: AbstractLogService = Depends(Provide[Application.services.log_service])
 ) -> BankResponse:
     try:
-        bank_dto = await bank_management_service.get_bank_by_id(bank_id)
+        bank_dto = await bank_management_service.get_bank_by_id(bank_id, requesting_user)
         log_service.info(f"Successfully fetched bank with ID {bank_id}")
     except NotFoundError as exc:
         log_service.warning(f"Bank with ID {bank_id} not found: {str(exc)}")
@@ -52,13 +53,14 @@ async def get_bank_by_id(
 })
 @inject
 async def get_banks(
+        requesting_user: UserAccessDTO = Depends(get_current_active_auth_user),
         bank_management_service: AbstractBankManagementService = Depends(
             Provide[Application.services.bank_management_service]
         ),
         log_service: AbstractLogService = Depends(Provide[Application.services.log_service])
 ) -> list[BankResponse]:
     try:
-        banks = await bank_management_service.get_banks()
+        banks = await bank_management_service.get_banks(requesting_user)
         log_service.info(f"Successfully fetched {len(banks)} banks")
     except Exception as exc:
         log_service.error(f"An unexpected error occurred while fetching the list of banks: {str(exc)}")
@@ -84,7 +86,7 @@ async def create_bank(
 ) -> BankResponse:
     log_service.info(f"Creating bank with name {bank_create.name}")
     try:
-        created_bank = await bank_management_service.create_bank(bank_create, requesting_user)
+        created_bank = await bank_management_service.create_bank(BankSchemaMapper.from_create_request(bank_create), requesting_user)
         log_service.info(f"Bank with name {created_bank.name} and ID {created_bank.id} successfully created")
     except UniqueConstraintError as exc:
         log_service.error(
@@ -123,7 +125,7 @@ async def update_bank_by_id(
 ) -> BankResponse:
     log_service.info(f"Updating bank with ID {bank_id}")
     try:
-        updated_bank = await bank_management_service.update_bank_by_id(bank_id, bank_update, requesting_user)
+        updated_bank = await bank_management_service.update_bank_by_id(bank_id, BankSchemaMapper.from_update_request(bank_update), requesting_user)
         log_service.info(f"Bank with ID {bank_id} successfully updated")
     except NotFoundError as exc:
         log_service.error(f"Bank with ID {bank_id} not found for update: {str(exc)}")
@@ -144,7 +146,6 @@ async def update_bank_by_id(
             detail=str(exc)
         )
     except Exception as exc:
-        raise exc
         log_service.error(f"An unexpected error while updating the bank with ID {bank_id}: {str(exc)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -157,8 +158,10 @@ async def update_bank_by_id(
     404: {"description": "Bank not found"},
     500: {"description": "Unexpected server error"}
 })
+@inject
 async def delete_bank_by_id(
         bank_id: int,
+        requesting_user: UserAccessDTO = Depends(get_current_active_auth_user),
         bank_management_service: AbstractBankManagementService = Depends(
             Provide[Application.services.bank_management_service]
         ),
@@ -167,7 +170,7 @@ async def delete_bank_by_id(
 ) -> dict:
     log_service.info(f"Deleting bank with ID {bank_id}")
     try:
-        await bank_management_service.delete_bank_by_id(bank_id)
+        await bank_management_service.delete_bank_by_id(bank_id, requesting_user)
         log_service.info(f"Bank with ID {bank_id} deleted successfully")
     except NotFoundError as exc:
         log_service.warning(f"Bank with ID {bank_id} not found for deletion: {str(exc)}")

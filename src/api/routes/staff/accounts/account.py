@@ -8,7 +8,8 @@ from src.application.dtos.user import UserAccessDTO
 from src.domain.exceptions.forbidden import ForbiddenError
 from src.infrastructure.dependencies.app import Application
 from src.infrastructure.exceptions.repository_exceptions import UniqueConstraintError, ForeignKeyError, NotFoundError
-from src.infrastructure.schemas.account import AccountResponse, AccountCreateRequest
+from src.infrastructure.schemas.account import AccountResponse, AccountUpdateRequest
+from src.infrastructure.mappers.account import AccountSchemaMapper
 
 from src.api.routes.staff.accounts.operation.loan import router as loan_router
 from src.api.routes.staff.accounts.operation.transfer import router as transfer_router
@@ -38,12 +39,9 @@ async def get_user_accounts(
             requesting_user
         )
         log_service.info(f"Successfully fetched accounts for user ID {user_id}")
-    except ForbiddenError as exc:
-        raise exc
     except Exception as exc:
-        raise exc
         log_service.error(f"An unexpected error occurred while fetching accounts for user ID {user_id}: {str(exc)}")
-        raise HttpExceptionFactory.create_http_exception(
+        raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An unexpected error occurred while fetching the list of accounts."
         )
@@ -87,4 +85,22 @@ async def delete_account_by_id(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An unexpected error occurred while deleting the account with id {account_id}."
         )
-    return {"message": "Bank deleted successfully"}
+    return None
+
+
+@router.patch("/{account_id}", response_model=AccountResponse)
+@inject
+async def update_account_by_id(
+        account_id: int,
+        account_update: AccountUpdateRequest,
+        requesting_user: UserAccessDTO = Depends(get_current_active_auth_user),
+        account_management_service: AbstractAccountManagementService = Depends(
+            Provide[Application.services.account_management_service]
+        )
+) -> AccountResponse:
+    account = await account_management_service.update_account_by_id(
+        account_id,
+        AccountSchemaMapper.from_update_request_to_staff(account_update),
+        requesting_user
+    )
+    return AccountSchemaMapper.to_response(account)

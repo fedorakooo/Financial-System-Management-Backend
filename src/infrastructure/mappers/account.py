@@ -33,6 +33,6 @@ class AccountSchemaMapper:
 
     @staticmethod
     def from_update_request_to_staff(request: AccountUpdateRequest) -> AccountUpdateStaffDTO:
-        return AccountUpdateClientDTO(
+        return AccountUpdateStaffDTO(
             status=request.status if hasattr(request, 'status') else None
         )

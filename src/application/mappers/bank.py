@@ -11,8 +11,8 @@ class BankMapper:
     def map_bank_create_dto_to_addition(dto: BankCreateDTO) -> Bank:
         return Bank(
             name=dto.name,
-            bic=dto.name,
-            address=dto.name,
+            bic=dto.bic,
+            address=dto.address,
             created_at=datetime.now(),
             updated_at=datetime.now()
         )

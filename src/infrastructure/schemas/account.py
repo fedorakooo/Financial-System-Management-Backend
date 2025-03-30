@@ -1,6 +1,5 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional
 from pydantic import BaseModel
 
 from src.domain.enums.account import AccountStatus, AccountType
@@ -11,7 +10,7 @@ class AccountCreateRequest(BaseModel):
 
 
 class AccountUpdateRequest(BaseModel):
-    status: Optional[AccountStatus]
+    status: AccountStatus
 
 
 class AccountResponse(BaseModel):

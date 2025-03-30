@@ -9,6 +9,10 @@ class AbstractAccountRepository(ABC):
     """Abstract class for an account repository."""
 
     @abstractmethod
+    async def lock_accounts(self, account_ids: list[int]) -> None:
+        """Lock participating accounts in ascending order until transaction end."""
+
+    @abstractmethod
     async def get_account_by_id(self, account_id) -> Account:
         """Fetches an account by its unique identifier.
 
@@ -44,10 +48,12 @@ class AbstractAccountRepository(ABC):
 
     @abstractmethod
     async def update_account_status(self, account_id: int, new_status: AccountStatus) -> None:
+        """Updates only the status of an existing account within the current transaction."""
         pass
 
     @abstractmethod
     async def update_account_balance(self, account_id: int, new_balance: Decimal) -> None:
+        """Stores the calculated balance of a locked account within the current transaction."""
         pass
 
     @abstractmethod

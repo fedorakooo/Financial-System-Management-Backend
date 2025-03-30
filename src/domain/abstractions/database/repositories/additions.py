@@ -21,6 +21,7 @@ class AbstractAdditionRepository(ABC):
 
     @abstractmethod
     async def create_addition(self, addition_create: Addition) -> dict:
+        """Creates an addition record and returns its generated identifier and timestamp."""
         pass
 
     @abstractmethod
