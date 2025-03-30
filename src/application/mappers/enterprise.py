@@ -1,4 +1,5 @@
 from src.application.dtos.account import AccountReadDTO
+from src.domain.enums.enterprise import EnterprisePayrollRequestStatus
 from src.domain.entities.enterprise import (
     Enterprise, EnterpriseSpecialist, EnterprisePayrollRequest, EnterprisePayrollTransaction
 )
@@ -69,7 +70,9 @@ class EnterpriseMapper:
             status=EnterprisePayrollRequestStatus.ON_CONSIDERATION,
             passport_numbers=dto.passport_numbers,
             enterprise_id=dto.enterprise_id,
-            specialist_id=dto.specialist
+            specialist_id=dto.specialist,
+            amount=dto.amount,
+            accounts_id=[],
         )
 
     @staticmethod
@@ -81,6 +84,8 @@ class EnterpriseMapper:
         return EnterprisePayrollRequestReadDTO(
             status=request.status,
             passport_numbers=request.passport_numbers,
+            amount=request.amount,
+            accounts_id=request.accounts_id,
             enterprise=enterprise_read_dto,
             specialist=specialist_read_dto,
             created_at=request.created_at,

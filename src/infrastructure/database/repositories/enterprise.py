@@ -2,6 +2,7 @@ from typing import Any
 
 from src.domain.abstractions.database.repositories.enterprise import AbstractEnterpriseRepository
 from src.domain.enums.enterprise import EnterprisePayrollRequestStatus
+from src.domain.exceptions.payment import InvalidOperationError
 from src.domain.entities.enterprise import (
     Enterprise,
     EnterpriseSpecialist,
@@ -38,10 +39,12 @@ class EnterpriseRepository(AbstractEnterpriseRepository):
         return EnterpriseDatabaseMapper.from_db_row_to_enterprise_specialist(row)
 
     async def get_enterprise_payroll_request_by_id(self, enterprise_payroll_request_id: int) -> EnterprisePayrollRequest:
-        stmt = "SELECT * FROM enterprise_payroll_requests WHERE id = $1"
+        stmt = "SELECT * FROM enterprise_payroll_requests WHERE id = $1 FOR UPDATE"
         row = await self.connection.fetchrow(stmt, enterprise_payroll_request_id)
         if row is None:
             raise NotFoundError(f"Enterprise payroll request with id = {enterprise_payroll_request_id} not found")
+        if row["amount"] is None:
+            raise InvalidOperationError("Payroll request amount is not specified")
         return EnterpriseDatabaseMapper.from_db_row_to_enterprise_payroll_request(row)
 
     async def create_enterprise_specialist(self, enterprise_specialist: EnterpriseSpecialist) -> EnterpriseSpecialist:
@@ -97,3 +100,8 @@ class EnterpriseRepository(AbstractEnterpriseRepository):
         if row is None:
             raise NotFoundError(f"Enterprise payroll request with id = {payroll_request_id} not found")
         return EnterpriseDatabaseMapper.from_db_row_to_enterprise_payroll_request(row)
+
+    async def update_payroll_request_accounts(self, payroll_request_id: int, accounts_id: list[int]) -> None:
+        stmt = "UPDATE enterprise_payroll_requests SET accounts_id = $2, updated_at = now() WHERE id = $1"
+
+        await self.connection.execute(stmt, payroll_request_id, accounts_id)

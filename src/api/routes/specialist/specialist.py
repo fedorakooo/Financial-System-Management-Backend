@@ -7,7 +7,6 @@ from src.application.dtos.enterprise import (
     EnterpriseSpecialistReadDTO,
     EnterprisePayrollRequestReadDTO,
     EnterprisePayrollTransactionReadDTO,
-    EnterprisePayrollRequestCreateDTO
 )
 from src.application.dtos.user import UserAccessDTO
 from src.infrastructure.dependencies.app import Application
@@ -65,7 +64,7 @@ async def get_enterprise_payroll_request_by_id(
     return EnterpriseSchemaMapper.map_enterprise_payroll_request_to_response(enterprise_payroll_request_dto)
 
 
-@router.get("/payroll_transactions/{payroll_request_id}", response_model=EnterprisePayrollTransactionResponse, responses={
+@router.get("/payroll_transactions/{payroll_request_id}", response_model=list[EnterprisePayrollTransactionResponse], responses={
     404: {"description": "Payroll Transactions not found"},
     500: {"description": "Unexpected server error"}
 })
@@ -124,7 +123,6 @@ async def make_enterprise_payroll_request(
 ) -> EnterprisePayrollRequestResponse:
     try:
         await enterprise_specialist_service.make_enterprise_payroll_request(payroll_request_id, requesting_user)
-        # Optionally, fetch the updated payroll request if needed after making the payment
         enterprise_payroll_request_dto = await enterprise_specialist_service.get_enterprise_payroll_request_by_id(
             payroll_request_id,
             requesting_user

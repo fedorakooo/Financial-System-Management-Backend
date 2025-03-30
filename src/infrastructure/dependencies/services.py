@@ -143,6 +143,7 @@ class Services(containers.DeclarativeContainer):
 
     enterprise_management_service = providers.Factory(
         EnterpriseManagementService,
+        password_handler=core.password_handler,
         uow=uow.enterprise_unit_of_work
     )
 

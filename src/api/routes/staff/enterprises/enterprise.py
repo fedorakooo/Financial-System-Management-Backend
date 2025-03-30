@@ -50,9 +50,8 @@ async def create_enterprise(
         )
 ) -> EnterpriseResponse:
     try:
-        created_enterprise_dto = await enterprise_service.create_enterprise(enterprise_create, requesting_user)
+        created_enterprise_dto = await enterprise_service.create_enterprise(EnterpriseSchemaMapper.map_enterprise_from_create_request(enterprise_create), requesting_user)
     except Exception as exc:
-        raise exc
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred.")
     return EnterpriseSchemaMapper.map_enterprise_to_response(created_enterprise_dto)
 
@@ -112,14 +111,14 @@ async def create_enterprise_specialist(
         )
 ) -> EnterpriseSpecialistResponse:
     user_create_dto = UserSchemaMapper.from_create_request(user_create)
-    created_user = await user_registration_service.create_user_specialist(user_create_dto)
     enterprise_specialist_create_dto = EnterpriseSchemaMapper.map_enterprise_specialist_from_create_request(
         enterprise_specialist_create,
-        created_user.id
+        None
     )
     created_enterprise_specialist_dto = await enterprise_service.create_enterprise_specialist(
         enterprise_specialist_create_dto,
-        requesting_user
+        requesting_user,
+        user_create_dto
     )
     enterprise_specialist = EnterpriseSchemaMapper.map_enterprise_specialist_to_response(created_enterprise_specialist_dto)
     return enterprise_specialist

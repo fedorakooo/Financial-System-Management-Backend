@@ -38,7 +38,7 @@ class EnterpriseSpecialistReadDTO:
 
 @dataclass(frozen=True)
 class EnterpriseSpecialistCreateDTO:
-    user_id: int
+    user_id: int | None
     enterprise_id: int
 
 
@@ -50,7 +50,7 @@ class EnterprisePayrollRequestReadDTO:
     enterprise: EnterpriseReadDTO
     specialist: EnterpriseSpecialistReadDTO
     created_at: datetime
-    amount: Decimal("0.00")
+    amount: Decimal
     updated_at: datetime
     id: int
 
@@ -58,7 +58,7 @@ class EnterprisePayrollRequestReadDTO:
 @dataclass(frozen=True)
 class EnterprisePayrollRequestCreateDTO:
     passport_numbers: list[str]
-    amount: Decimal("0.00")
+    amount: Decimal
     enterprise_id: int
     specialist: int
 
