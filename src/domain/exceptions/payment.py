@@ -24,3 +24,9 @@ class PaymentExceedsLimitError(PaymentError):
             f"Already paid: {self.already_paid}. "
             f"Maximum allowed payment: {self.max_allowed}"
         )
+
+
+class InvalidOperationError(PaymentError):
+    """Operation conflicts with the current state or financial contract."""
+    pass
+    pass

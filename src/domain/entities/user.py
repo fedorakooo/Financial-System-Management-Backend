@@ -17,4 +17,4 @@ class User:
     is_foreign: bool
     id: Optional[int] = None
     created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = datetime.now()
+    updated_at: Optional[datetime] = None

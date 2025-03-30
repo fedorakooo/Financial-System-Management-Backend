@@ -9,7 +9,7 @@ from src.domain.enums.transfer import TransferStatus
 class Transfer:
     from_account_id: int
     to_account_id: int
-    amount: Decimal("0.00")
+    amount: Decimal
     id: int = None
     status: TransferStatus = TransferStatus.COMPLETED
     updated_at: datetime = None

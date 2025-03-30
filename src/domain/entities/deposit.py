@@ -9,7 +9,7 @@ from src.domain.enums.deposit import DepositTransactionType
 @dataclass(frozen=True)
 class DepositAccount:
     account_id: int
-    interest_rate: Decimal("0.00")
+    interest_rate: Decimal
     user_id: int
     from_account_id: int
     id: Optional[int] = None
@@ -21,6 +21,6 @@ class DepositTransaction:
     deposit_account_id: int
     account_id: int
     type: DepositTransactionType
-    amount: Decimal("0.00")
+    amount: Decimal
     id: Optional[int] = None
     created_at: Optional[datetime] = None

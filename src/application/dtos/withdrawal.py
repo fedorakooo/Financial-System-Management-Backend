@@ -9,7 +9,7 @@ from src.domain.enums.withdrawal import WithdrawalSource
 class WithdrawalReadDTO:
     id: int
     account_id: int
-    amount: Decimal("0.00")
+    amount: Decimal
     source: WithdrawalSource
     created_at: datetime
 
@@ -17,5 +17,5 @@ class WithdrawalReadDTO:
 @dataclass(frozen=True)
 class WithdrawalCreateDTO:
     account_id: int
-    amount: Decimal("0.00")
+    amount: Decimal
     source: WithdrawalSource

@@ -9,7 +9,7 @@ from src.domain.enums.addition import AdditionSource
 class AdditionReadDTO:
     id: int
     account_id: int
-    amount: Decimal("0.00")
+    amount: Decimal
     source: AdditionSource
     created_at: datetime
 
@@ -17,5 +17,5 @@ class AdditionReadDTO:
 @dataclass(frozen=True)
 class AdditionCreateDTO:
     account_id: int
-    amount: Decimal("0.00")
+    amount: Decimal
     source: AdditionSource

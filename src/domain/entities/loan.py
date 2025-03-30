@@ -8,7 +8,7 @@ from src.domain.enums.loan import LoanTermMonths, LoanTransactionType
 
 @dataclass(frozen=True)
 class Loan:
-    amount: Decimal("0.00")
+    amount: Decimal
     term_months: LoanTermMonths
     interest_rate: Decimal
     id: Optional[int] = None
@@ -28,6 +28,6 @@ class LoanAccount:
 class LoanTransaction:
     loan_account_id: int
     type: LoanTransactionType
-    amount: Decimal("0.00")
+    amount: Decimal
     id: Optional[int] = None
     created_at: Optional[datetime] = None

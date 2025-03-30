@@ -32,7 +32,7 @@ class EnterprisePayrollRequest:
     passport_numbers: list[str]
     enterprise_id: int
     specialist_id: int
-    amount: Decimal("0.00")
+    amount: Decimal
     accounts_id: Optional[list[int]] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None

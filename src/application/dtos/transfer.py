@@ -9,7 +9,7 @@ from src.domain.enums.transfer import TransferStatus
 class TransferReadDTO:
     from_account_id: int
     to_account_id: int
-    amount: Decimal("0.00")
+    amount: Decimal
     id: int
     status: TransferStatus
     updated_at: datetime
@@ -20,4 +20,4 @@ class TransferReadDTO:
 class TransferCreateDTO:
     from_account_id: int
     to_account_id: int
-    amount: Decimal("0.00")
+    amount: Decimal
